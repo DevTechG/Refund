@@ -6,6 +6,8 @@ const category = document.getElementById("category")
 
 // Seleciona os elementos da lista.
 const expenseList = document.querySelector("ul")
+const expensesQuantity = document.querySelector("aside header p span")
+const expensesTotal = document.querySelector("aside header h2")
 
 // Captura o evento de input para formatar o valor.
 amount.oninput = () => {
@@ -49,6 +51,7 @@ form.onsubmit = (event) => {
     expenseAdd(newExpense)
 }
 
+// Adiciona um novo item na lista.
 function expenseAdd(newExpense) {
     try {
         // Cria o elemento para adicionar o item (li) na lista (ul).
@@ -80,14 +83,73 @@ function expenseAdd(newExpense) {
         expenseAmount.classList.add("expense-amount")
         expenseAmount.innerHTML = `<small>R$</small>${newExpense.amount.toUpperCase().replace("R$","")}`
 
+        // Crie o ícone de removere
+        const removeIcon = document.createElement("img")
+        removeIcon.classList.add("remove-icon")
+        removeIcon.setAttribute("src", "img/remove.svg")
+        removeIcon.setAttribute("alt", "remover")
+
         // Adiciona as informações no item.
-        expenseItem.append(expenseIcon, expenseInfo,expenseAmount)
+        expenseItem.append(expenseIcon, expenseInfo,expenseAmount, removeIcon)
 
         // Adiciona o item na lista.
         expenseList.append(expenseItem)
 
+        // Atualiza os totais.
+        updateTotals()
+
     } catch (error) {
         alert("Não foi possível atualizar a lista de despensas.")
         console.log
+    }
+}
+
+// Atualiza os totais.
+function updateTotals() {
+    try {
+        // Recupera todos os itens (li) na lista (ul).
+        const items = expenseList.children
+        
+        // Atualiza a quantidade de itens da lista.
+        expensesQuantity.textContent = `${items.length} ${items.length > 1 ? "despesas" : "despesa"}`
+
+        // Variável para incrementar o total.
+        let total = 0
+
+        // Percorre cada item (li) da lista (ul).
+        for (let item = 0; item < items.length; item++) {
+            const itemAmount = items[item].querySelector(".expense-amount")
+
+            // R$ 1,00
+            // Remove caracteres não numéricos e substitui a vírgula pelo ponto.
+            let value = itemAmount.textContent.replace(/[^\d,]/g,"").replace(",",".")
+
+            // Converte o valor para float.
+            value = parseFloat(value)
+
+            if (isNaN(value)) {
+                return alert("Não foi possível calcular o total. O valor não parece ser um número.")
+            }
+
+            // Incrementar o valor total.
+            total += Number(value)
+        }
+
+        // Cria a span para adicionar o R$ formatado.
+        const symbolBRL = document.createElement("small")
+        symbolBRL.textContent = "R$"
+
+        // Formata o valor e remove o R$ que será exibido pela small com um estilo customizado.
+        total = formatCurrencyBRL(total).toUpperCase().replace("R$", "")
+        
+        // Limpa o conteúdo do elemento.
+        expensesTotal.innerHTML = ""
+
+        // Adiciona o símbolo e o valor total formatado
+        expensesTotal.append(symbolBRL, total)
+
+    } catch (error) {
+        alert("Não foi possível atualizar os totais.")
+        console.log(error)
     }
 }
